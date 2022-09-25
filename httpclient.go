@@ -12,8 +12,8 @@ import (
 var Client http.Client
 
 func init() {
-	Client := http.Client{
-		TimeOut: 30 * time.Second,
+	Client = http.Client{
+		Timeout: 30 * time.Second,
 	}
 }
 
@@ -44,14 +44,14 @@ func API(data, resp any, method, url, auth string) (any, error) {
 		return response, err
 	}
 	defer response.Body.Close()
-	data, err := io.ReadAll(response.Body)
+	data, err = io.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
 	if response.StatusCode != http.StatusOK {
-		return data, fmt.Errorf("endpoint return status %s", resp.Status)
+		return data, fmt.Errorf("endpoint return status %s", response.Status)
 	}
-	if err = json.Unmarshal(data, resp); err != nil {
+	if err = json.Unmarshal(data.([]byte), resp); err != nil {
 		return nil, fmt.Errorf("response not json %w", err)
 	}
 	return resp, nil
