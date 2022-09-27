@@ -1,3 +1,3 @@
-module gitlab.com/nusak/httpclient
+module github.com/devilcove/httpclient
 
-go 1.19
+go 1.18
