@@ -1,15 +1,18 @@
-httpclient is a simple library to facilitate calls to http endpoints.
-two methods to call
-    function with parameters
-    method with structure
-two options for results
-    raw response (*http.Response)
-    response body decoded to json
+# httpclient 
+* simple library to facilitate calls to http endpoints
+## two methods to call
+* function with parameters
+* method with structure
+## two options for results
+* raw response (*http.Response)
+* response body decoded to json
+# Examples
+## Full Response
+equivalent of 
 
-example function call with parameters (full response)
-equivalent of curl 'https://api.example.com' -H 'Authorization: Bearer API_TOKEN'
-
-
+`curl 'https://api.example.com' -H 'Authorization: Bearer API_TOKEN'`
+### function 
+```
 func main() {
     token := os.Getenv("API_TOKEN")
     response, err := httpclient.API("", http.MethodGet, "https://api.example.com", token)
@@ -20,10 +23,10 @@ func main() {
     bytes, err := io.ReadAll(response.Body)
     log.Println(response.StatusCode, string(bytes))
 }
+```
 
-example method call with parameters (full response)
-equivalent of curl 'https://api.example.com' -H 'Authorization: Bearer API_TOKEN'
-
+### method 
+```
 func main() {
     token := os.Getenv("API_TOKEN")
     endpoint := httpclient.Endpoint {
@@ -36,10 +39,13 @@ func main() {
     bytes, err := io.ReadAll(response.Body)
     log.Println(response.StatusCode, string(bytes))
 }
+```
+## JSON response
+equivalent of 
 
-example function call with json response
-equivalent of curl 'https://api.example.com/api/login' -H 'Authorization: Bearer API_TOKEN' - H 'Content-Type: application/json' -d '{"name":"admin","pass":"password"}'
-
+`curl 'https://api.example.com/api/login' -H 'Authorization: Bearer API_TOKEN' - H 'Content-Type: application/json' -d '{"name":"admin","pass":"password"}'`
+### function 
+```
 func main() {
     token := os.Getenv("API_TOKEN")
     data := struct {
@@ -56,10 +62,9 @@ func main() {
     }
     log.Println(response)
 }
-
-example method call with json response
-equivalent of curl 'https://api.example.com/api/login' -H 'Authorization: Bearer API_TOKEN' - H 'Content-Type: application/json' -d '{"name":"admin","pass":"password"}'
-
+```
+## method
+```
 func main() {
     token := os.Getenv("API_TOKEN")
     data := struct {
@@ -84,4 +89,4 @@ func main() {
     }
     log.Println(response)
 }
-
+```
