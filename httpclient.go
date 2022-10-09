@@ -10,6 +10,7 @@ import (
 
 var Client http.Client
 
+// Endpoint struct for an http endpoint
 type Endpoint struct {
 	URL           string
 	Method        string
@@ -25,6 +26,7 @@ func init() {
 	}
 }
 
+// API returns respnse from http request to url
 func API(data any, method, url, auth string) (*http.Response, error) {
 	var request *http.Request
 	var response *http.Response
@@ -51,6 +53,7 @@ func API(data any, method, url, auth string) (*http.Response, error) {
 	return Client.Do(request)
 }
 
+// JSON return JSON response from http request
 func JSON(data, resp any, method, url, auth string) (any, error) {
 	response, err := API(data, method, url, auth)
 	if err != nil {
@@ -63,10 +66,12 @@ func JSON(data, resp any, method, url, auth string) (any, error) {
 	return resp, nil
 }
 
+// JSON return JSON response from http endpoint
 func (e *Endpoint) JSON() (any, error) {
 	return JSON(e.Data, e.Response, e.Method, e.URL+e.Route, e.Authorization)
 }
 
+// GetResponse returns response from http endpoint
 func (e *Endpoint) GetResponse() (*http.Response, error) {
 	return API(e.Data, e.Method, e.URL+e.Route, e.Authorization)
 }
