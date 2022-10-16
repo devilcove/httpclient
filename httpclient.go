@@ -48,7 +48,7 @@ func API(data any, method, url, auth string) (*http.Response, error) {
 		}
 	}
 	if auth != "" {
-		request.Header.Set("Authorization", "Bearer "+auth)
+		request.Header.Set("Authorization", auth)
 	}
 	return Client.Do(request)
 }
