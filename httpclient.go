@@ -72,7 +72,20 @@ func JSON[T any](data any, resp T, method, url, auth string) (any, error) {
 
 // JSON return JSON response from http endpoint
 func (e *Endpoint) JSON() (any, error) {
-	return JSON(e.Data, e.Response, e.Method, e.URL+e.Route, e.Authorization)
+	// does not work as returned reponse is map[string]interface
+	// not sure why
+	//return JSON(e.Data, e.Response, e.Method, e.URL+e.Route, e.Authorization)
+	response, err := API(e.Data, e.Method, e.URL+e.Route, e.Authorization)
+	if err != nil {
+		return nil, err
+	}
+	pretty.Println("response before json decodiing", e.Response)
+	defer response.Body.Close()
+	if err := json.NewDecoder(response.Body).Decode(&e.Response); err != nil {
+		return nil, err
+	}
+	pretty.Println("response after json decodiing", e.Response)
+	return e.Response, nil
 }
 
 // GetResponse returns response from http endpoint
