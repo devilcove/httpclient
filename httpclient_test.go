@@ -10,9 +10,9 @@ import (
 	"github.com/matryer/is"
 )
 
-func TestAPI(t *testing.T) {
+func TestGetResponse(t *testing.T) {
 	t.Run("ip endpoint", func(t *testing.T) {
-		response, err := API(nil, http.MethodGet, "https://firefly.nusak.ca/ip", "")
+		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/ip", "")
 		is := is.New(t)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusOK)
@@ -25,7 +25,7 @@ func TestAPI(t *testing.T) {
 		}
 	})
 	t.Run("invalid endpoint", func(t *testing.T) {
-		response, err := API(nil, http.MethodGet, "https://firefly.nusak.ca/invalidendpoint", "")
+		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/invalidendpoint", "")
 		is := is.New(t)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusNotFound)
@@ -41,12 +41,12 @@ func TestAPI(t *testing.T) {
 		jwt := struct {
 			JWT string
 		}{}
-		response, err := API(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
+		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
 		is := is.New(t)
 		is.NoErr(err)
 		defer response.Body.Close()
 		is.NoErr(json.NewDecoder(response.Body).Decode(&jwt))
-		response, err = API("", http.MethodGet, "https://firefly.nusak.ca/api/hello", jwt.JWT)
+		response, err = GetResponse("", http.MethodGet, "https://firefly.nusak.ca/api/hello", jwt.JWT)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusOK)
 		defer response.Body.Close()
@@ -69,7 +69,7 @@ func TestAPI(t *testing.T) {
 		}{}
 		var data Data
 		data.Pass = "badpass"
-		response, err := API(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
+		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
 		is := is.New(t)
 		is.NoErr(err)
 		defer response.Body.Close()
