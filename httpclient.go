@@ -48,13 +48,13 @@ func API(data any, method, url, auth string) (*http.Response, error) {
 		}
 	}
 	if auth != "" {
-		request.Header.Set("Authorization", "Bearer "+auth)
+		request.Header.Set("Authorization", auth)
 	}
 	return Client.Do(request)
 }
 
 // JSON return JSON response from http request
-func JSON(data, resp any, method, url, auth string) (any, error) {
+func JSON[T any](data, resp T, method, url, auth string) (any, error) {
 	response, err := API(data, method, url, auth)
 	if err != nil {
 		return nil, err
