@@ -5,7 +5,7 @@
 * method with structure
 ## two options for results
 * raw response (*http.Response)
-* response body decoded to json
+* response body decoded to json (func call only)
 # Examples
 ## Full Response
 equivalent of 
@@ -15,7 +15,7 @@ equivalent of
 ```
 func main() {
     token := os.Getenv("API_TOKEN")
-    response, err := httpclient.API("", http.MethodGet, "https://api.example.com", token)
+    response, err := httpclient.GetResponse("", http.MethodGet, "https://api.example.com", token)
     if err !=nil {
         log.Fatal(err)
     }
@@ -43,7 +43,7 @@ func main() {
 ## JSON response
 equivalent of 
 
-`curl 'https://api.example.com/api/login' -H 'Authorization: Bearer API_TOKEN' - H 'Content-Type: application/json' -d '{"name":"admin","pass":"password"}'`
+`curl 'https://api.example.com/login' -H 'Authorization: Bearer API_TOKEN' - H 'Content-Type: application/json' -d '{"name":"admin","pass":"password"}'`
 ### function 
 ```
 func main() {
@@ -56,37 +56,9 @@ func main() {
         Language_Pref: "EN",
         JWT: "some string",
     }
-    response, err := httpclient.JSON(data, http.MethodPOST, "https://api.example.com/api/login", token)
+    response, err := httpclient.GetJSON(data, http.MethodPOST, "https://api.example.com/api/login", "Bearer " + token)
     if err !=nil {
         log.Fatal(err)
     }
     log.Println(response)
 }
-```
-## method
-```
-func main() {
-    token := os.Getenv("API_TOKEN")
-    data := struct {
-        Name: "admin",
-        Pass: "password",
-    }
-    response := struct {
-        Language_Pref: "EN",
-        JWT: "some string",
-    }
-    endpoint := httpclient.Endpoint {
-        URL: "https://api.clustercat.com",
-	    Method: http.MethodPOST
-	    Authorization: token,
-        Route: "/api/login",
-        Data: data,
-        Response: response,
-    }
-    response, err := httpclient.JSON()
-    if err !=nil {
-        log.Fatal(err)
-    }
-    log.Println(response)
-}
-```
