@@ -71,7 +71,7 @@ func JSON[T any](data any, resp T, method, url, auth string) (any, error) {
 }
 
 // JSON return JSON response from http endpoint
-func (e *Endpoint) JSON() (any, error) {
+func (e Endpoint) JSON() (any, error) {
 	// does not work as returned reponse is map[string]interface
 	// not sure why
 	//return JSON(e.Data, e.Response, e.Method, e.URL+e.Route, e.Authorization)
