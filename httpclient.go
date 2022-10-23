@@ -16,8 +16,8 @@ type Endpoint struct {
 	Method        string
 	Route         string
 	Authorization string
-	Data          interface{}
-	Response      interface{}
+	Data          any
+	Response      any
 }
 
 func init() {
@@ -54,7 +54,7 @@ func API(data any, method, url, auth string) (*http.Response, error) {
 }
 
 // JSON return JSON response from http request
-func JSON[T any](data, resp T, method, url, auth string) (any, error) {
+func JSON[T any](data any, resp T, method, url, auth string) (any, error) {
 	response, err := API(data, method, url, auth)
 	if err != nil {
 		return nil, err
