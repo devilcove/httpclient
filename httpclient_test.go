@@ -96,17 +96,14 @@ func TestGetJSON(t *testing.T) {
 		response := struct {
 			JWT string
 		}{}
-		e := Endpoint{
-			URL:    "http://firefly.nusak.ca",
-			Route:  "/login",
-			Method: http.MethodPost,
-			Data:   data,
+		e := JSONEndpoint[struct{ JWT string }]{
+			URL:      "http://firefly.nusak.ca",
+			Route:    "/login",
+			Method:   http.MethodPost,
+			Data:     data,
+			Response: response,
 		}
-		g := JSONEndpoint[struct{ JWT string }]{
-			e,
-			response,
-		}
-		answer, err := g.GetJSON(response)
+		answer, err := e.GetJSON(response)
 		is.NoErr(err)
 		answerType := fmt.Sprintf("%T", answer)
 		is.True(answerType == "struct { JWT string }")

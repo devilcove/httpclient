@@ -19,9 +19,13 @@ type Endpoint struct {
 	Data          any
 }
 
-type JSONEndpoint[T comparable] struct {
-	Endpoint
-	Response T
+type JSONEndpoint[T any] struct {
+	URL           string
+	Method        string
+	Route         string
+	Authorization string
+	Data          any
+	Response      T
 }
 
 func init() {
