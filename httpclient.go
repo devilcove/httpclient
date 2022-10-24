@@ -21,6 +21,11 @@ type Endpoint struct {
 	Data          any
 }
 
+type JSONEndpoint[T comparable] struct {
+	Endpoint
+	Response T
+}
+
 func init() {
 	Client = http.Client{
 		Timeout: 30 * time.Second,
@@ -54,7 +59,7 @@ func GetResponse(data any, method, url, auth string) (*http.Response, error) {
 	return Client.Do(request)
 }
 
-// JSON return JSON response from http request
+// JSON returns JSON response from http request
 func GetJSON[T any](data any, resp T, method, url, auth string) (any, error) {
 	response, err := GetResponse(data, method, url, auth)
 	if err != nil {
@@ -72,4 +77,9 @@ func GetJSON[T any](data any, resp T, method, url, auth string) (any, error) {
 // GetResponse returns response from http endpoint
 func (e *Endpoint) GetResponse() (*http.Response, error) {
 	return GetResponse(e.Data, e.Method, e.URL+e.Route, e.Authorization)
+}
+
+// GetJSON returns JSON received from http endpoint
+func (e *JSONEndpoint[T]) GetJSON(response T) (any, error) {
+	return GetJSON(e.Data, response, e.Method, e.URL+e.Route, e.Authorization)
 }
