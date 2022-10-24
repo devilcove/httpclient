@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 var Client http.Client
@@ -65,12 +63,10 @@ func GetJSON[T any](data any, resp T, method, url, auth string) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	pretty.Println("response before json decodiing", resp)
 	defer response.Body.Close()
 	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
 		return nil, err
 	}
-	pretty.Println("response after json decodiing", resp)
 	return resp, nil
 }
 
