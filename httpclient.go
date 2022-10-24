@@ -35,7 +35,7 @@ func GetResponse(data any, method, url, auth string) (*http.Response, error) {
 	var request *http.Request
 	var response *http.Response
 	var err error
-	if data != "" {
+	if data != nil {
 		payload, err := json.Marshal(data)
 		if err != nil {
 			return response, fmt.Errorf("error encoding data %w", err)
