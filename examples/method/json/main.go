@@ -14,16 +14,13 @@ type Response struct {
 
 func main() {
 	var response Response
-	end := httpclient.Endpoint{
+	endpoint := httpclient.JSONEndpoint[Response]{
 		URL:           "https://api.ipify.org?format=json",
 		Route:         "",
 		Method:        http.MethodGet,
 		Authorization: "",
 		Data:          nil,
-	}
-	endpoint := httpclient.JSONEndpoint[Response]{
-		Endpoint: end,
-		Response: response,
+		Response:      response,
 	}
 	answer, err := endpoint.GetJSON(response)
 	if err != nil {
