@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/kr/pretty"
 )
 
 var Client http.Client
@@ -21,6 +19,11 @@ type Endpoint struct {
 	Data          any
 }
 
+type JSONEndpoint[T comparable] struct {
+	Endpoint
+	Response T
+}
+
 func init() {
 	Client = http.Client{
 		Timeout: 30 * time.Second,
@@ -32,7 +35,7 @@ func GetResponse(data any, method, url, auth string) (*http.Response, error) {
 	var request *http.Request
 	var response *http.Response
 	var err error
-	if data != "" {
+	if data != nil {
 		payload, err := json.Marshal(data)
 		if err != nil {
 			return response, fmt.Errorf("error encoding data %w", err)
@@ -54,22 +57,25 @@ func GetResponse(data any, method, url, auth string) (*http.Response, error) {
 	return Client.Do(request)
 }
 
-// JSON return JSON response from http request
+// JSON returns JSON response from http request
 func GetJSON[T any](data any, resp T, method, url, auth string) (any, error) {
 	response, err := GetResponse(data, method, url, auth)
 	if err != nil {
 		return nil, err
 	}
-	pretty.Println("response before json decodiing", resp)
 	defer response.Body.Close()
 	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
 		return nil, err
 	}
-	pretty.Println("response after json decodiing", resp)
 	return resp, nil
 }
 
 // GetResponse returns response from http endpoint
 func (e *Endpoint) GetResponse() (*http.Response, error) {
 	return GetResponse(e.Data, e.Method, e.URL+e.Route, e.Authorization)
+}
+
+// GetJSON returns JSON received from http endpoint
+func (e *JSONEndpoint[T]) GetJSON(response T) (any, error) {
+	return GetJSON(e.Data, response, e.Method, e.URL+e.Route, e.Authorization)
 }

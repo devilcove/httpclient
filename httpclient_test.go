@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
@@ -80,5 +81,34 @@ func TestGetResponse(t *testing.T) {
 	t.Run("hello", func(t *testing.T) {
 
 	})
+}
 
+func TestGetJSON(t *testing.T) {
+	is := is.New(t)
+	t.Run("login", func(t *testing.T) {
+		data := struct {
+			User string
+			Pass string
+		}{
+			User: "demo",
+			Pass: "pass",
+		}
+		response := struct {
+			JWT string
+		}{}
+		e := Endpoint{
+			URL:    "http://firefly.nusak.ca",
+			Route:  "/login",
+			Method: http.MethodPost,
+			Data:   data,
+		}
+		g := JSONEndpoint[struct{ JWT string }]{
+			e,
+			response,
+		}
+		answer, err := g.GetJSON(response)
+		is.NoErr(err)
+		answerType := fmt.Sprintf("%T", answer)
+		is.True(answerType == "struct { JWT string }")
+	})
 }
