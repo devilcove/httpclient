@@ -3,6 +3,7 @@ package httpclient
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -62,16 +63,19 @@ func GetResponse(data any, method, url, auth string) (*http.Response, error) {
 }
 
 // JSON returns JSON response from http request
-func GetJSON[T any](data any, resp T, method, url, auth string) (any, error) {
+func GetJSON[T any](data any, resp T, method, url, auth string) (any, int, error) {
 	response, err := GetResponse(data, method, url, auth)
 	if err != nil {
-		return nil, err
+		return nil, response.StatusCode, err
 	}
 	defer response.Body.Close()
-	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
-		return nil, err
+	if response.StatusCode != http.StatusOK {
+		return response, response.StatusCode, errors.New("non 200 response code")
 	}
-	return resp, nil
+	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
+		return nil, response.StatusCode, err
+	}
+	return resp, response.StatusCode, nil
 }
 
 // GetResponse returns response from http endpoint
@@ -80,6 +84,6 @@ func (e *Endpoint) GetResponse() (*http.Response, error) {
 }
 
 // GetJSON returns JSON received from http endpoint
-func (e *JSONEndpoint[T]) GetJSON(response T) (any, error) {
+func (e *JSONEndpoint[T]) GetJSON(response T) (any, int, error) {
 	return GetJSON(e.Data, response, e.Method, e.URL+e.Route, e.Authorization)
 }

@@ -22,9 +22,12 @@ func main() {
 		Data:          nil,
 		Response:      response,
 	}
-	answer, err := endpoint.GetJSON(response)
+	answer, code, err := endpoint.GetJSON(response)
 	if err != nil {
 		log.Fatal(err)
+	}
+	if code != http.StatusOK {
+		log.Fatal(err, code)
 	}
 	fmt.Println(answer)
 
