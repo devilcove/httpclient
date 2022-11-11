@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	response, err := httpclient.GetResponse(nil, http.MethodGet, "http://ifconfig.me", "")
+	response, err := httpclient.GetResponse(nil, http.MethodGet, "http://ifconfig.me", "", nil)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -14,20 +14,19 @@ type Response struct {
 
 func main() {
 	var response Response
-	endpoint := httpclient.JSONEndpoint[Response]{
+	var errResponse any
+	endpoint := httpclient.JSONEndpoint[Response, any]{
 		URL:           "https://api.ipify.org?format=json",
 		Route:         "",
 		Method:        http.MethodGet,
 		Authorization: "",
 		Data:          nil,
 		Response:      response,
+		ErrorResponse: errResponse,
 	}
-	answer, code, err := endpoint.GetJSON(response)
+	answer, err := endpoint.GetJSON(response, errResponse)
 	if err != nil {
 		log.Fatal(err)
-	}
-	if code != http.StatusOK {
-		log.Fatal(err, code)
 	}
 	fmt.Println(answer)
 
