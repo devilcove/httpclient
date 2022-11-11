@@ -13,7 +13,7 @@ import (
 
 func TestGetResponse(t *testing.T) {
 	t.Run("ip endpoint", func(t *testing.T) {
-		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/ip", "")
+		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/ip", "", nil)
 		is := is.New(t)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusOK)
@@ -26,7 +26,7 @@ func TestGetResponse(t *testing.T) {
 		}
 	})
 	t.Run("invalid endpoint", func(t *testing.T) {
-		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/invalidendpoint", "")
+		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/invalidendpoint", "", nil)
 		is := is.New(t)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusNotFound)
@@ -42,12 +42,12 @@ func TestGetResponse(t *testing.T) {
 		jwt := struct {
 			JWT string
 		}{}
-		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
+		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "", nil)
 		is := is.New(t)
 		is.NoErr(err)
 		defer response.Body.Close()
 		is.NoErr(json.NewDecoder(response.Body).Decode(&jwt))
-		response, err = GetResponse("", http.MethodGet, "https://firefly.nusak.ca/api/hello", jwt.JWT)
+		response, err = GetResponse("", http.MethodGet, "https://firefly.nusak.ca/api/hello", jwt.JWT, nil)
 		is.NoErr(err)
 		is.Equal(response.StatusCode, http.StatusOK)
 		defer response.Body.Close()
@@ -70,7 +70,7 @@ func TestGetResponse(t *testing.T) {
 		}{}
 		var data Data
 		data.Pass = "badpass"
-		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "")
+		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "", nil)
 		is := is.New(t)
 		is.NoErr(err)
 		defer response.Body.Close()
@@ -96,16 +96,17 @@ func TestGetJSON(t *testing.T) {
 		response := struct {
 			JWT string
 		}{}
-		e := JSONEndpoint[struct{ JWT string }]{
-			URL:      "http://firefly.nusak.ca",
-			Route:    "/login",
-			Method:   http.MethodPost,
-			Data:     data,
-			Response: response,
+		var errResponse any
+		e := JSONEndpoint[struct{ JWT string }, any]{
+			URL:           "http://firefly.nusak.ca",
+			Route:         "/login",
+			Method:        http.MethodPost,
+			Data:          data,
+			Response:      response,
+			ErrorResponse: errResponse,
 		}
-		answer, code, err := e.GetJSON(response)
+		answer, err := e.GetJSON(response, errResponse)
 		is.NoErr(err)
-		is.Equal(code, http.StatusOK)
 		answerType := fmt.Sprintf("%T", answer)
 		is.True(answerType == "struct { JWT string }")
 	})

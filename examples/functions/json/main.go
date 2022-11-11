@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/devilcove/httpclient"
 )
@@ -15,12 +16,14 @@ type Answer struct {
 // equivalient of curl api.ipify.org?format=json
 func main() {
 	var answer Answer
-	ip, code, err := httpclient.GetJSON(nil, answer, http.MethodGet, "http://api.ipify.org?format=json", "")
+	var errResp any
+	ip, err := httpclient.GetJSON(nil, answer, errResp, http.MethodGet, "http://api.ipify.org?format=json", "", nil)
 	if err != nil {
-		log.Fatal(err)
-	}
-	if code != http.StatusOK {
-		log.Fatal(err, code)
+		if strings.Contains(err.Error(), "non ok status") {
+			fmt.Println(ip, err)
+		} else {
+			log.Fatal(err)
+		}
 	}
 	fmt.Println(ip)
 }
