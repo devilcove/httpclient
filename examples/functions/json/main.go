@@ -17,7 +17,7 @@ type Answer struct {
 func main() {
 	var answer Answer
 	var errResp any
-	ip, err := httpclient.GetJSON(nil, answer, errResp, http.MethodGet, "http://api.ipify.org?format=json", "", nil)
+	ip, _, err := httpclient.GetJSON(nil, answer, errResp, http.MethodGet, "http://api.ipify.org?format=json", "", nil)
 	if err != nil {
 		if strings.Contains(err.Error(), "non ok status") {
 			fmt.Println(ip, err)

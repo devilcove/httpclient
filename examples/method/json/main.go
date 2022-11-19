@@ -24,7 +24,7 @@ func main() {
 		Response:      response,
 		ErrorResponse: errResponse,
 	}
-	answer, err := endpoint.GetJSON(response, errResponse)
+	answer, _, err := endpoint.GetJSON(response, errResponse)
 	if err != nil {
 		log.Fatal(err)
 	}

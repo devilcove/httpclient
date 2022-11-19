@@ -76,27 +76,26 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 }
 
 // JSON returns JSON response from http request
-// if response.code is http.StatusOK (200) returns body decoded to resp
-// if response.code is not http.Status ok returns response(*http.Response) with err set to
-// 'non ok response code'
-// if json decode err returns response and err set to 'json decode err'
-// for any other err returns nil and err
-func GetJSON[T any, R any](data any, resp T, errResponse R, method, url, auth string, headers []Header) (any, error) {
+// if response.code is http.StatusOK (200) returns resp, nil, nil
+// if response.code is not http.Status ok returns nil, errResponse, err='non ok response code'
+// if json decode err returns  nil, nil, err set to 'json decode err'
+// for any other err returns nil, nil, err
+func GetJSON[T any, R any](data any, resp T, errResponse R, method, url, auth string, headers []Header) (T, R, error) {
 	response, err := GetResponse(data, method, url, auth, headers)
 	if err != nil {
-		return nil, err
+		return resp, errResponse, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		if err := json.NewDecoder(response.Body).Decode(&errResponse); err != nil {
-			return response, ErrJSON
+			return resp, errResponse, ErrJSON
 		}
-		return errResponse, ErrStatus
+		return resp, errResponse, ErrStatus
 	}
 	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
-		return response, ErrJSON
+		return resp, errResponse, ErrJSON
 	}
-	return resp, nil
+	return resp, errResponse, nil
 }
 
 // GetResponse returns response from http endpoint
@@ -105,6 +104,6 @@ func (e *Endpoint) GetResponse() (*http.Response, error) {
 }
 
 // GetJSON returns JSON received from http endpoint
-func (e *JSONEndpoint[T, R]) GetJSON(response T, errResponse R) (any, error) {
+func (e *JSONEndpoint[T, R]) GetJSON(response T, errResponse R) (T, R, error) {
 	return GetJSON(e.Data, response, errResponse, e.Method, e.URL+e.Route, e.Authorization, e.Headers)
 }
