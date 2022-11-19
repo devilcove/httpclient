@@ -105,9 +105,10 @@ func TestGetJSON(t *testing.T) {
 			Response:      response,
 			ErrorResponse: errResponse,
 		}
-		answer, err := e.GetJSON(response, errResponse)
+		answer, errs, err := e.GetJSON(response, errResponse)
 		is.NoErr(err)
 		answerType := fmt.Sprintf("%T", answer)
 		is.True(answerType == "struct { JWT string }")
+		is.Equal(errs, nil)
 	})
 }
