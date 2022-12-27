@@ -9,7 +9,8 @@ import (
 )
 
 var Client http.Client
-var ErrJSON = errors.New("httpclient: json error")
+var ErrJSON = errors.New("httpclient: json error decoding response")
+var ErrJSON2 = errors.New("httpclient: json error decoding error response")
 var ErrRequest = errors.New("httpclient: error creating http request")
 var ErrStatus = errors.New("httpclient: http.Status not OK")
 
