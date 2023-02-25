@@ -3,16 +3,32 @@ package httpclient
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
 
 var Client http.Client
-var ErrJSON = errors.New("httpclient: json error decoding response")
-var ErrJSON2 = errors.New("httpclient: json error decoding error response")
-var ErrRequest = errors.New("httpclient: error creating http request")
-var ErrStatus = errors.New("httpclient: http.Status not OK")
+
+const (
+	ErrJSON    = "httpclient: json error decoding response"
+	ErrJSON2   = "httpclient: json error decoding error response"
+	ErrRequest = "httpclient: error creating http request"
+	ErrStatus  = "httpclient: http.Status not OK"
+)
+
+// ErrHttpClient error stuct
+type ErrHttpClient struct {
+	Status  int
+	Message string
+	Body    http.Response
+}
+
+// ErrHttpClient.Error implementation of error interface
+func (e ErrHttpClient) Error() string {
+	return e.Message
+}
 
 // Endpoint struct for an http endpoint
 type Endpoint struct {
@@ -54,17 +70,31 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 	if data != nil {
 		payload, err := json.Marshal(data)
 		if err != nil {
-			return response, ErrJSON
+			return response, ErrHttpClient{
+				Status:  http.StatusBadRequest,
+				Message: ErrJSON,
+				Body:    *response,
+			}
 		}
 		request, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
 		if err != nil {
-			return response, ErrRequest
+			log.Println("httclient:NewRequest with payload", err)
+			return response, ErrHttpClient{
+				Status:  http.StatusBadRequest,
+				Message: ErrRequest,
+				Body:    *response,
+			}
 		}
 		request.Header.Set("Content-Type", "application/json")
 	} else {
 		request, err = http.NewRequest(method, url, nil)
 		if err != nil {
-			return response, ErrRequest
+			log.Println("httclient:NewRequest", err)
+			return response, ErrHttpClient{
+				Status:  http.StatusBadRequest,
+				Message: ErrRequest,
+				Body:    *response,
+			}
 		}
 	}
 	if auth != "" {
@@ -78,23 +108,39 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 
 // JSON returns JSON response from http request
 // if response.code is http.StatusOK (200) returns resp, nil, nil
-// if response.code is not http.Status ok returns nil, errResponse, err='non ok response code'
+// if response.code is not http.Status ok returns nil, errResponse, ErrStatus
 // if json decode err returns  nil, nil, err set to 'json decode err'
 // for any other err returns nil, nil, err
 func GetJSON[T any, R any](data any, resp T, errResponse R, method, url, auth string, headers []Header) (T, R, error) {
 	response, err := GetResponse(data, method, url, auth, headers)
 	if err != nil {
-		return resp, errResponse, err
+		return resp, errResponse, ErrHttpClient{
+			Status:  response.StatusCode,
+			Message: fmt.Errorf("%w", err).Error(),
+			Body:    *response,
+		}
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		if err := json.NewDecoder(response.Body).Decode(&errResponse); err != nil {
-			return resp, errResponse, ErrJSON
+			return resp, errResponse, ErrHttpClient{
+				Status:  response.StatusCode,
+				Message: fmt.Errorf("json decode err with error response %w", err).Error(),
+				Body:    *response,
+			}
 		}
-		return resp, errResponse, ErrStatus
+		return resp, errResponse, ErrHttpClient{
+			Status:  response.StatusCode,
+			Message: ErrStatus,
+			Body:    *response,
+		}
 	}
 	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
-		return resp, errResponse, ErrJSON
+		return resp, errResponse, ErrHttpClient{
+			Status:  response.StatusCode,
+			Message: fmt.Errorf("json decode err with response %w", err).Error(),
+			Body:    *response,
+		}
 	}
 	return resp, errResponse, nil
 }
