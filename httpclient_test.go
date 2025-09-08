@@ -8,28 +8,27 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/matryer/is"
+	"github.com/Kairum-Labs/should"
 )
 
 func TestGetResponse(t *testing.T) {
 	t.Run("ip endpoint", func(t *testing.T) {
 		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/ip", "", nil)
-		is := is.New(t)
-		is.NoErr(err)
-		is.Equal(response.StatusCode, http.StatusOK)
+		should.BeNil(t, err)
+		should.BeEqual(t, response.StatusCode, http.StatusOK)
 		defer response.Body.Close()
 		bytes, err := io.ReadAll(response.Body)
-		is.NoErr(err)
+		should.BeNil(t, err)
 		ip := net.ParseIP(string(bytes))
 		if ip == nil {
-			is.Fail()
+			t.Log(string(bytes))
+			t.Fail()
 		}
 	})
 	t.Run("invalid endpoint", func(t *testing.T) {
 		response, err := GetResponse(nil, http.MethodGet, "https://firefly.nusak.ca/invalidendpoint", "", nil)
-		is := is.New(t)
-		is.NoErr(err)
-		is.Equal(response.StatusCode, http.StatusNotFound)
+		should.BeNil(t, err)
+		should.BeEqual(t, response.StatusCode, http.StatusNotFound)
 	})
 	t.Run("login and hello", func(t *testing.T) {
 		type Data struct {
@@ -43,48 +42,46 @@ func TestGetResponse(t *testing.T) {
 			JWT string
 		}{}
 		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "", nil)
-		is := is.New(t)
-		is.NoErr(err)
+		should.BeNil(t, err)
 		defer response.Body.Close()
-		is.NoErr(json.NewDecoder(response.Body).Decode(&jwt))
+		should.BeNil(t, json.NewDecoder(response.Body).Decode(&jwt))
 		response, err = GetResponse("", http.MethodGet, "https://firefly.nusak.ca/api/hello", jwt.JWT, nil)
-		is.NoErr(err)
-		is.Equal(response.StatusCode, http.StatusOK)
+		should.BeNil(t, err)
+		should.BeEqual(t, response.StatusCode, http.StatusOK)
 		defer response.Body.Close()
 		bytes, err := io.ReadAll(response.Body)
-		is.NoErr(err)
+		should.BeNil(t, err)
 		ip := net.ParseIP(string(bytes))
 		if ip == nil {
-			is.Fail()
+			t.Fail()
 		}
 	})
 
 	t.Run("badlogin", func(t *testing.T) {
-		type Data struct {
+		data := struct {
 			User string
 			Pass string
+		}{
+			User: "demo",
+			Pass: "badpass",
 		}
 		answer := struct {
-			Request Data
-			Error   string
+			Message string
 		}{}
-		var data Data
-		data.Pass = "badpass"
 		response, err := GetResponse(data, http.MethodPost, "https://firefly.nusak.ca/login", "", nil)
-		is := is.New(t)
-		is.NoErr(err)
+		should.BeNil(t, err)
 		defer response.Body.Close()
-		is.Equal(response.StatusCode, http.StatusBadRequest)
-		is.NoErr(json.NewDecoder(response.Body).Decode(&answer))
-		is.Equal(answer.Error, "invalid username or password")
+		body, err := io.ReadAll(response.Body)
+		should.BeNil(t, err)
+		should.BeEqual(t, response.StatusCode, http.StatusBadRequest)
+		should.BeNil(t, json.Unmarshal(body, &answer))
+		should.BeEqual(t, answer.Message, "invalid username or password")
 	})
 	t.Run("hello", func(t *testing.T) {
-
 	})
 }
 
 func TestGetJSON(t *testing.T) {
-	is := is.New(t)
 	t.Run("login", func(t *testing.T) {
 		data := struct {
 			User string
@@ -106,9 +103,10 @@ func TestGetJSON(t *testing.T) {
 			ErrorResponse: errResponse,
 		}
 		answer, errs, err := e.GetJSON(response, errResponse)
-		is.NoErr(err)
+		should.BeNil(t, err)
 		answerType := fmt.Sprintf("%T", answer)
-		is.True(answerType == "struct { JWT string }")
-		is.Equal(errs, nil)
+		t.Log(answerType)
+		should.BeTrue(t, answerType == "struct { JWT string }")
+		should.BeNil(t, errs)
 	})
 }
