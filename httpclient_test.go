@@ -110,3 +110,19 @@ func TestGetJSON(t *testing.T) {
 		should.BeNil(t, errs)
 	})
 }
+
+type dummyStruct struct {
+	Value string `json:"value"`
+}
+
+func TestGetJSON_PanicOnNilResponse(t *testing.T) {
+	var resp dummyStruct
+	var errResp dummyStruct
+
+	_, _, err := GetJSON(nil, resp, errResp, "GET", ":", "", nil)
+
+	if err == nil {
+		t.Fatal("err should not be nil")
+	}
+
+}
