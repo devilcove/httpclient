@@ -73,7 +73,7 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 			return response, ErrHttpClient{
 				Status:  http.StatusBadRequest,
 				Message: ErrJSON,
-				Body:    *response,
+				Body:    http.Response{},
 			}
 		}
 		request, err = http.NewRequest(method, url, bytes.NewBuffer(payload))
@@ -82,7 +82,7 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 			return response, ErrHttpClient{
 				Status:  http.StatusBadRequest,
 				Message: ErrRequest,
-				Body:    *response,
+				Body:    http.Response{},
 			}
 		}
 		request.Header.Set("Content-Type", "application/json")
@@ -93,7 +93,7 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 			return response, ErrHttpClient{
 				Status:  http.StatusBadRequest,
 				Message: ErrRequest,
-				Body:    *response,
+				Body:    http.Response{},
 			}
 		}
 	}
@@ -114,18 +114,21 @@ func GetResponse(data any, method, url, auth string, headers []Header) (*http.Re
 func GetJSON[T any, R any](data any, resp T, errResponse R, method, url, auth string, headers []Header) (T, R, error) {
 	response, err := GetResponse(data, method, url, auth, headers)
 	if err != nil {
-		return resp, errResponse, ErrHttpClient{
-			Status:  response.StatusCode,
-			Message: fmt.Errorf("%w", err).Error(),
-			Body:    *response,
+		if response != nil {
+			return resp, errResponse, ErrHttpClient{
+				Status:  response.StatusCode,
+				Message: err.Error(),
+				Body:    *response,
+			}
 		}
+		return resp, errResponse, err
 	}
 	defer response.Body.Close()
 	if response.StatusCode != http.StatusOK {
 		if err := json.NewDecoder(response.Body).Decode(&errResponse); err != nil {
 			return resp, errResponse, ErrHttpClient{
 				Status:  response.StatusCode,
-				Message: fmt.Errorf("json decode err with error response %w", err).Error(),
+				Message: fmt.Errorf("json decode err with error response %v", err).Error(),
 				Body:    *response,
 			}
 		}
@@ -138,7 +141,7 @@ func GetJSON[T any, R any](data any, resp T, errResponse R, method, url, auth st
 	if err := json.NewDecoder(response.Body).Decode(&resp); err != nil {
 		return resp, errResponse, ErrHttpClient{
 			Status:  response.StatusCode,
-			Message: fmt.Errorf("json decode err with response %w", err).Error(),
+			Message: fmt.Errorf("json decode err with response %v", err).Error(),
 			Body:    *response,
 		}
 	}
