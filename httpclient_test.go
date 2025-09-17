@@ -121,8 +121,6 @@ func TestGetJSON_PanicOnNilResponse(t *testing.T) {
 
 	_, _, err := GetJSON(nil, resp, errResp, "GET", ":", "", nil)
 
-	if err == nil {
-		t.Fatal("err should not be nil")
-	}
+	should.NotBeNil(t, err)
 
 }
